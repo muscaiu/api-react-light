@@ -9,36 +9,40 @@ const fs = require('fs');
 const Gpio = require('onoff').Gpio;
 const relay = new Gpio(17, 'out');
 
+let lastAction = 'neinitializat'
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-//CORS
 app.use(cors());
-// app.use(function (req, res, next) {
-//   res.setHeader('Access-Control-Allow-Origin', '*');
-//   res.setHeader('Access-Control-Allow-Credentials', 'true');
-//   res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
-//   res.setHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers');
-
-//   //and remove cacheing so we get the most recent comments
-//   res.setHeader('Cache-Control', 'no-cache');
-//   next();
-// });
 
 router.get('/light', function (req, res) {
   let currentValue = relay.readSync();
-  res.json({ status: currentValue });
+  res.json(
+    {
+      status: currentValue,
+      lastAction
+    }
+  );
 });
+
+relay.writeSync(1); //turn relay off on start
 
 router.post('/light', function (req, res) {
   console.log('data', req.body)
-  if (req.body.status === true) {
-    relay.writeSync(1); //turn relay on or off
-  }else{
-    relay.writeSync(0); //turn relay on or off
-  }
-  res.json({ status: 'light changed!' });
-});
+  lastAction = Date.now();
 
+  if (req.body.status === true) {
+    relay.writeSync(1); //turn relay on
+  } else {
+    relay.writeSync(0); //turn relay off
+  }
+  res.json(
+    {
+      status: 'light changed!',
+      lastAction
+    }
+  );
+});
 
 // io.sockets.on('connection', (socket) => {// WebSocket Connection
 //   let currentValue = relay.readSync();
