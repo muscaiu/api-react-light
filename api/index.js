@@ -44,30 +44,15 @@ router.post('/light', function (req, res) {
 
 router.post('/login', function (req, res) {
   if (req.body.password === 'orhideelor') {
+    lastAction = Date.now();
     console.log(req.body, 'access granted')
-    res.json({ access: true })
+    res.json({ access: true, lastAction })
   } else {
     console.log(req.body, 'access denied')
     res.json({ access: false })
   }
 });
 
-
-
-// io.sockets.on('connection', (socket) => {// WebSocket Connection
-//   let currentValue = relay.readSync();
-//   console.log('+ connection, currentValue is', currentValue)
-
-//   socket.emit('light', currentValue)
-
-//   socket.on('light', (data) => { //get light switch status from client
-//     console.log('currentValue',currentValue)
-//     console.log('data', data)
-//     if (data != relay.readSync()) { //only change relay if status has changed
-//         relay.writeSync(data); //turn relay on or off
-//     }
-//   });
-// });
 
 app.listen(port, function () {
   console.log(`API running on port ${port}`);
