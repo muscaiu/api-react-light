@@ -5,15 +5,15 @@ const port = 3001;
 const app = express();
 const router = express.Router();
 const fs = require('fs');
-//PI imports
 const Gpio = require('onoff').Gpio;
 const relay = new Gpio(17, 'out');
-
-let lastAction = 'neinitializat'
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
+relay.writeSync(1); //turn relay off on start for safety
+
+let lastAction = 'uninitialized'
 
 router.get('/light', function (req, res) {
   let currentValue = relay.readSync();
@@ -25,16 +25,14 @@ router.get('/light', function (req, res) {
   );
 });
 
-relay.writeSync(1); //turn relay off on start
-
 router.post('/light', function (req, res) {
-  console.log('data', req.body)
+  console.log('change status to', req.body.status)
   lastAction = Date.now();
 
   if (req.body.status === true) {
-    relay.writeSync(1); //turn relay on
+    relay.writeSync(0); //turn relay on
   } else {
-    relay.writeSync(0); //turn relay off
+    relay.writeSync(1); //turn relay off
   }
   res.json(
     {
@@ -43,6 +41,18 @@ router.post('/light', function (req, res) {
     }
   );
 });
+
+router.post('/login', function (req, res) {
+  if (req.body.password === 'orhideelor') {
+    console.log(req.body, 'access granted')
+    res.json({ access: true })
+  } else {
+    console.log(req.body, 'access denied')
+    res.json({ access: false })
+  }
+});
+
+
 
 // io.sockets.on('connection', (socket) => {// WebSocket Connection
 //   let currentValue = relay.readSync();
@@ -58,7 +68,6 @@ router.post('/light', function (req, res) {
 //     }
 //   });
 // });
-
 
 app.listen(port, function () {
   console.log(`API running on port ${port}`);
