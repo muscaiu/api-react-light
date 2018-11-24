@@ -58,7 +58,7 @@ actionsRef.limitToLast(1).on('child_added', function (snap) {
 function checkBetweenHours(first, second) {
   const date = new Date();
   // let current_minute = date.getMinutes();
-  let currentHour = date.gethours();
+  let currentHour = date.getHours();
   let currentValue = relay.readSync();
   lastAction = Date.now();
 
@@ -102,7 +102,7 @@ function timeCron() {
   }
 }
 // timeCron();
-setInterval(timeCron, 1800000); //every hour
+setInterval(timeCron, 600000); //every 10 minutes
 // setInterval(timeCron, 10000); //every 10 sec
 
 
