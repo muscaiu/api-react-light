@@ -23,23 +23,23 @@ const actionsRef = firebase.database().ref('actions');
 let lastAction = 'uninitialized';
 let mode = 'auto';
 let modeTime = 'uninitialized';
-let lastWeatherUpdate = 'uninitialized';
+// let lastWeatherUpdate = 'uninitialized';
 
 // const API_KEY = 'TBvCyGYowHIVOtFjgGwL1jAyw6dPpUix';
-const ACU_API = 'http://dataservice.accuweather.com/currentconditions/v1';
-const CITY_KEY = '273756';
+// const ACU_API = 'http://dataservice.accuweather.com/currentconditions/v1';
+// const CITY_KEY = '273756';
 
-function watherCron() {
-  axios.get(`${ACU_API}/${CITY_KEY}?apikey=TBvCyGYowHIVOtFjgGwL1jAyw6dPpUix`)
-    .then(response => {
-      lastWeatherUpdate = response.data[0]
-    })
-    .catch((error) => {
-      console.log(error);
-    })
-}
-watherCron();
-setInterval(watherCron, 60 * 120000); //every 2 hours
+// function watherCron() {
+//   axios.get(`${ACU_API}/${CITY_KEY}?apikey=TBvCyGYowHIVOtFjgGwL1jAyw6dPpUix`)
+//     .then(response => {
+//       lastWeatherUpdate = response.data[0]
+//     })
+//     .catch((error) => {
+//       console.log(error);
+//     })
+// }
+// watherCron();
+// setInterval(watherCron, 60 * 120000); //every 2 hours
 
 
 actionsRef.limitToLast(1).on('child_added', function (snap) {
@@ -57,20 +57,19 @@ actionsRef.limitToLast(1).on('child_added', function (snap) {
 
 function checkBetweenHours(first, second) {
   const date = new Date();
-  // let current_minute = date.getMinutes();
   let currentHour = date.getHours();
   let currentValue = relay.readSync();
-  lastAction = Date.now();
 
   console.log(currentHour, first, second, mode);
-  if (currentHour >= first && currentHour <= second) {
+  if (currentHour >= first && currentHour < second) {
     if (currentValue === 1) {
+      lastAction = Date.now();
       actionsRef.push({
         lastAction,
         status: currentValue,
         mode,
         humanDate: format(lastAction, 'HH:mm DD/MMM'),
-        lastWeatherUpdate
+        // lastWeatherUpdate
       });
 
       relay.writeSync(0); //turn relay on
@@ -80,12 +79,13 @@ function checkBetweenHours(first, second) {
     }
   } else {
     if (currentValue === 0) {
+      lastAction = Date.now();
       actionsRef.push({
         lastAction,
         status: currentValue,
         mode,
         humanDate: format(lastAction, 'HH:mm DD/MMM'),
-        lastWeatherUpdate
+        // lastWeatherUpdate
       });
 
       relay.writeSync(1); //turn relay off
@@ -102,7 +102,7 @@ function timeCron() {
   }
 }
 // timeCron();
-setInterval(timeCron, 600000); //every 10 minutes
+setInterval(timeCron, 10000);
 // setInterval(timeCron, 10000); //every 10 sec
 
 
@@ -113,7 +113,7 @@ router.get('/light', function (req, res) {
       status: currentValue,
       lastAction,
       mode,
-      lastWeatherUpdate,
+      // lastWeatherUpdate,
       apiVersion: pack.version
     }
   );
@@ -128,7 +128,7 @@ router.post('/light', function (req, res) {
     status: req.body.status,
     mode,
     humanDate: format(lastAction, 'HH:mm DD/MMM'),
-    lastWeatherUpdate
+    // lastWeatherUpdate
   });
 
   if (req.body.status === true) {
